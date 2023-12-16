@@ -1,0 +1,23 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "plugin:promise/recommended"],
+  "overrides": [],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "rules": {
+    // OFF
+    "react/jsx-props-no-spreading": "off",
+    "newline-before-return": "off",
+    "import/order": "off",
+    // WARN RULES
+    // ERROR RULES
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error"
+  }
+}
