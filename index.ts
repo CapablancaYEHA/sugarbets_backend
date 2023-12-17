@@ -35,6 +35,7 @@ app.use(
       "Request",
     ],
     exposedHeaders: ["*"],
+    credentials: true,
     origin: "http://45.89.66.41",
     preflightContinue: false,
     methods: "GET", // "GET, POST, PUT, PATCH, POST, DELETE"
@@ -54,26 +55,7 @@ app.use((req, res, next) => {
 // FIXME подготовить для прода
 const io = new Server(http, {
   cors: {
-    allowedHeaders: [
-      "Access-Control-Request-Method",
-      "Access-Control-Request-Headers",
-      "Access-Control-Allow-Methods",
-      "Access-Control-Allow-Credentials",
-      "Access-Control-Allow-Headers",
-      "Access-Control-Allow-Origin",
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-      "X-HTTP-Method-Override",
-      "Request",
-    ],
-    exposedHeaders: ["*"],
-    origin: "http://45.89.66.41",
-    preflightContinue: false,
-    methods: "GET", // "GET, POST, PUT, PATCH, POST, DELETE"
-    optionsSuccessStatus: 200,
+    origin: "*",
   },
 });
 
