@@ -11,7 +11,7 @@ config();
 const isDevMode = () => process.env.NODE_ENV === "development";
 
 const app = express();
-const PORT = 4000;
+const PORT = isDevMode() ? 4000 : 80;
 
 // @ts-ignore
 const http = httpInst.Server(app);
