@@ -11,7 +11,8 @@ config();
 const isDevMode = () => process.env.NODE_ENV === "development";
 
 const app = express();
-const PORT = isDevMode() ? 4000 : 80;
+// const PORT = isDevMode() ? 4000 : 80;
+const PORT = 4000;
 
 // @ts-ignore
 const http = httpInst.Server(app);
@@ -71,7 +72,7 @@ app.get("/api/bets/:id", async (req, res) => {
   }
 });
 
-http.listen(PORT, "0.0.0.0", () => {
+http.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
 
