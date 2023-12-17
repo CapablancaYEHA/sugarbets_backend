@@ -71,7 +71,7 @@ app.get("/api/bets/:id", async (req, res) => {
   }
 });
 
-http.listen(PORT, () => {
+http.listen(PORT, "45.89.66.41", () => {
   console.log(`Server listening on ${PORT}`);
 });
 
