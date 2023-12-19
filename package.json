@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.ts",
+    "dev": "nodemon index.ts",
     "prod": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts"
   },
   "keywords": [],

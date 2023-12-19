@@ -17,45 +17,74 @@ const PORT = 4000;
 // @ts-ignore
 const http = httpInst.Server(app);
 // FIXME подготовить для прода
+// app.use(
+//   cors({
+//     allowedHeaders: [
+//       "Access-Control-Request-Method",
+//       "Access-Control-Request-Headers",
+//       "Access-Control-Allow-Methods",
+//       "Access-Control-Allow-Credentials",
+//       "Access-Control-Allow-Headers",
+//       "Access-Control-Allow-Origin",
+//       "Origin",
+//       "X-Requested-With",
+//       "Content-Type",
+//       "Accept",
+//       "Authorization",
+//       "X-HTTP-Method-Override",
+//       "Request",
+//     ],
+//     exposedHeaders: ["*"],
+//     credentials: true,
+//     origin: "http://45.89.66.41",
+//     preflightContinue: false,
+//     methods: "GET, POST, PUT, PATCH, POST, DELETE",
+//     optionsSuccessStatus: 200,
+//   })
+// );
 app.use(
-  cors({
-    allowedHeaders: [
-      "Access-Control-Request-Method",
-      "Access-Control-Request-Headers",
-      "Access-Control-Allow-Methods",
-      "Access-Control-Allow-Credentials",
-      "Access-Control-Allow-Headers",
-      "Access-Control-Allow-Origin",
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-      "X-HTTP-Method-Override",
-      "Request",
-    ],
-    exposedHeaders: ["*"],
-    credentials: true,
-    origin: "http://45.89.66.41",
-    preflightContinue: false,
-    methods: "GET", // "GET, POST, PUT, PATCH, POST, DELETE"
-    optionsSuccessStatus: 200,
-  })
+  cors(
+    isDevMode()
+      ? {}
+      : {
+          allowedHeaders: [
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "Access-Control-Allow-Methods",
+            "Access-Control-Allow-Credentials",
+            "Access-Control-Allow-Headers",
+            "Access-Control-Allow-Origin",
+            "Origin",
+            "X-Requested-With",
+            "Content-Type",
+            "Accept",
+            "Authorization",
+            "X-HTTP-Method-Override",
+            "Request",
+          ],
+          exposedHeaders: ["*"],
+          credentials: true,
+          origin: "http://45.89.66.41",
+          preflightContinue: false,
+          methods: "GET, POST, PUT, PATCH, POST, DELETE",
+          optionsSuccessStatus: 200,
+        }
+  )
 );
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With,Content-Type,Accept"
-  );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With,Content-Type,Accept"
+//   );
+//   next();
+// });
 
 // FIXME подготовить для прода
 const io = new Server(http, {
   cors: {
-    origin: "*",
+    origin: isDevMode() ? "*" : "http://45.89.66.41",
   },
 });
 
@@ -108,6 +137,3 @@ app.get("/api/bets/:id", async (req, res) => {
 http.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
-
-// FIXME
-// чем emit отличается от broadcast
