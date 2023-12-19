@@ -72,21 +72,23 @@ app.use(
   )
 );
 
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With,Content-Type,Accept"
-//   );
-//   next();
-// });
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With,Content-Type,Accept"
+  );
+  next();
+});
 
 // FIXME подготовить для прода
 const io = new Server(http, {
   cors: {
-    origin: isDevMode() ? "*" : "http://45.89.66.41",
+    origin: "*",
   },
 });
+
+// origin: isDevMode() ? "*" : "http://45.89.66.41:4173",
 
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
