@@ -17,31 +17,7 @@ const PORT = 4000;
 // @ts-ignore
 const http = httpInst.Server(app);
 // FIXME подготовить для прода
-// app.use(
-//   cors({
-//     allowedHeaders: [
-//       "Access-Control-Request-Method",
-//       "Access-Control-Request-Headers",
-//       "Access-Control-Allow-Methods",
-//       "Access-Control-Allow-Credentials",
-//       "Access-Control-Allow-Headers",
-//       "Access-Control-Allow-Origin",
-//       "Origin",
-//       "X-Requested-With",
-//       "Content-Type",
-//       "Accept",
-//       "Authorization",
-//       "X-HTTP-Method-Override",
-//       "Request",
-//     ],
-//     exposedHeaders: ["*"],
-//     credentials: true,
-//     origin: "http://45.89.66.41",
-//     preflightContinue: false,
-//     methods: "GET, POST, PUT, PATCH, POST, DELETE",
-//     optionsSuccessStatus: 200,
-//   })
-// );
+
 app.use(
   cors(
     isDevMode()
@@ -64,7 +40,7 @@ app.use(
           ],
           exposedHeaders: ["*"],
           credentials: true,
-          origin: "http://45.89.66.41",
+          origin: "http://45.89.66.41:4173",
           preflightContinue: false,
           methods: "GET, POST, PUT, PATCH, POST, DELETE",
           optionsSuccessStatus: 200,
@@ -72,23 +48,21 @@ app.use(
   )
 );
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With,Content-Type,Accept"
-  );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With,Content-Type,Accept"
+//   );
+//   next();
+// });
 
 // FIXME подготовить для прода
 const io = new Server(http, {
   cors: {
-    origin: "*",
+    origin: isDevMode() ? "*" : "http://45.89.66.41:4173",
   },
 });
-
-// origin: isDevMode() ? "*" : "http://45.89.66.41:4173",
 
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
