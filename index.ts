@@ -2,65 +2,33 @@ import cors from "cors";
 import express from "express";
 import * as httpInst from "http";
 import { Server } from "socket.io";
-import { config } from "dotenv";
+import passport from "passport";
 
-import { findBet, getBetsList, sendBetAmount } from "./db";
+import "dotenv/config.js";
 
-config();
-
-const isDevMode = () => process.env.NODE_ENV === "development";
+import {
+  createUser,
+  findBet,
+  getBetsList,
+  login,
+  sendBetAmount,
+} from "./airtable/api";
+import { corsObj, isDevMode, originIp } from "./const";
+import { pass_middleware } from "./pass_middleware";
 
 const app = express();
-// const PORT = isDevMode() ? 4000 : 80;
 const PORT = 4000;
 
 // @ts-ignore
 const http = httpInst.Server(app);
-// FIXME подготовить для прода
+app.use(cors(isDevMode() ? {} : corsObj));
+app.use(express.json());
+app.use(passport.initialize());
+pass_middleware(passport);
 
-app.use(
-  cors(
-    isDevMode()
-      ? {}
-      : {
-          allowedHeaders: [
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers",
-            "Access-Control-Allow-Methods",
-            "Access-Control-Allow-Credentials",
-            "Access-Control-Allow-Headers",
-            "Access-Control-Allow-Origin",
-            "Origin",
-            "X-Requested-With",
-            "Content-Type",
-            "Accept",
-            "Authorization",
-            "X-HTTP-Method-Override",
-            "Request",
-          ],
-          exposedHeaders: ["*"],
-          credentials: true,
-          origin: "http://45.89.66.41:4173",
-          preflightContinue: false,
-          methods: "GET, POST, PUT, PATCH, POST, DELETE",
-          optionsSuccessStatus: 200,
-        }
-  )
-);
-
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With,Content-Type,Accept"
-//   );
-//   next();
-// });
-
-// FIXME подготовить для прода
 const io = new Server(http, {
   cors: {
-    origin: isDevMode() ? "*" : "http://45.89.66.41:4173",
+    origin: isDevMode() ? "*" : originIp,
   },
 });
 
@@ -92,14 +60,18 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/api/bets", async (req, res) => {
-  try {
-    let result = await getBetsList();
-    res.send(result);
-  } catch (err) {
-    console.log("err", err);
+app.get(
+  "/api/bets",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      let result = await getBetsList();
+      res.send(result);
+    } catch (err) {
+      res.json(err);
+    }
   }
-});
+);
 
 app.get("/api/bets/:id", async (req, res) => {
   try {
@@ -107,6 +79,26 @@ app.get("/api/bets/:id", async (req, res) => {
     res.send(result);
   } catch (err) {
     console.log("err", err);
+  }
+});
+
+app.post("/api/auth/register", async (req, res) => {
+  const { name, mail, pass } = req.body;
+  try {
+    let result = await createUser({ name, mail, pass });
+    res.status(201).send(result);
+  } catch (err) {
+    res.status(418).json(err);
+  }
+});
+
+app.post("/api/auth/login", async (req, res) => {
+  const { mail, pass } = req.body;
+  try {
+    let result = await login({ mail, pass });
+    res.send(result);
+  } catch (err) {
+    res.status(403).json(err);
   }
 });
 

@@ -26,6 +26,6 @@
   "ts-node": {
     "files": true
   },
-  "include": ["*"],
+  "include": ["*", "airtable/api.ts"],
   "exclude": ["node_modules"]
 }
