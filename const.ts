@@ -1,5 +1,5 @@
 export const isDevMode = () => process.env.NODE_ENV === "development";
-export const originIp = "http://45.89.66.41:80";
+export const originIp = "http://45.89.66.41";
 
 export const corsObj = {
   allowedHeaders: [

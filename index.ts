@@ -26,39 +26,39 @@ app.use(express.json());
 app.use(passport.initialize());
 pass_middleware(passport);
 
-const io = new Server(http, {
-  cors: {
-    origin: isDevMode() ? "*" : originIp,
-  },
-});
+// const io = new Server(http, {
+//   cors: {
+//     origin: isDevMode() ? "*" : originIp,
+//   },
+// });
 
-io.on("connection", (socket) => {
-  console.log(`⚡: ${socket.id} user just connected!`);
+// io.on("connection", (socket) => {
+//   console.log(`⚡: ${socket.id} user just connected!`);
 
-  socket.on("betRoomJoin", (data) => {
-    console.log("used joined room", `bet-${data.betId}`);
-    socket.join(`bet-${data.betId}`);
-  });
+//   socket.on("betRoomJoin", (data) => {
+//     console.log("used joined room", `bet-${data.betId}`);
+//     socket.join(`bet-${data.betId}`);
+//   });
 
-  socket.on("betSubmit", async (data) => {
-    try {
-      const newBetAmount = await sendBetAmount(data.betAmount, data.betId);
-      io.in(`bet-${data.betId}`).emit("betUpdateResponse", {
-        updatedValue: newBetAmount,
-      });
-    } catch (err) {
-      console.log("err", err);
-    }
-  });
+//   socket.on("betSubmit", async (data) => {
+//     try {
+//       const newBetAmount = await sendBetAmount(data.betAmount, data.betId);
+//       io.in(`bet-${data.betId}`).emit("betUpdateResponse", {
+//         updatedValue: newBetAmount,
+//       });
+//     } catch (err) {
+//       console.log("err", err);
+//     }
+//   });
 
-  socket.on("betLeave", (data) => {
-    console.log("🔥: user left room", `bet-${data.betId}`);
-  });
+//   socket.on("betLeave", (data) => {
+//     console.log("🔥: user left room", `bet-${data.betId}`);
+//   });
 
-  socket.on("disconnect", () => {
-    console.log("☠️: A user disconnected");
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("☠️: A user disconnected");
+//   });
+// });
 
 app.get(
   "/api/bets",
