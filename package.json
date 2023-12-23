@@ -25,6 +25,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "socket.io": "^4.7.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
@@ -33,7 +34,6 @@
     "@types/node": "^20.10.4",
     "@types/passport": "^1.0.16",
     "@types/passport-jwt": "^3.0.13",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "ts-node": "^10.9.2"
+    "@typescript-eslint/eslint-plugin": "^6.14.0"
   }
 }
