@@ -62,7 +62,7 @@ export const createUser = async ({
 export const login = async ({
   mail,
   pass,
-}: IUserLoginRequest): Promise<string> => {
+}: IUserLoginRequest): Promise<{ token: string; userId: string }> => {
   const mailFormula = `{userMail}="${mail}"`;
 
   try {
@@ -87,7 +87,10 @@ export const login = async ({
           process.env.JWT!,
           { expiresIn: "2h" }
         );
-        return Promise.resolve(token);
+        return Promise.resolve({
+          token,
+          userId: byMail[0]._rawJson.id,
+        });
       } catch (e) {
         console.log("token_create_err", e?.message);
         throw e;
@@ -95,6 +98,15 @@ export const login = async ({
     }
   } catch (e) {
     throw e;
+  }
+};
+
+export const getUserTickets = async (id: string) => {
+  try {
+    const record = await dbClient("Users").find(id);
+    return record._rawJson.fields.tickets;
+  } catch (e) {
+    throw { message: "Запрос тикетов не удался", status: e.statusCode };
   }
 };
 

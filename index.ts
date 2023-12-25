@@ -10,6 +10,7 @@ import {
   createUser,
   findBet,
   getBetsList,
+  getUserTickets,
   login,
   sendBetAmount,
 } from "./airtable/api";
@@ -73,6 +74,21 @@ app.get(
   }
 );
 
+// Если ответ предполагается не стринга\json, то его нельзя просто так отправить, нужно преобразовать в json
+app.get(
+  "/api/tickets",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    let { user } = req.query;
+    try {
+      let result = await getUserTickets(user as string);
+      res.json(result);
+    } catch (err) {
+      res.status(err?.status || 500).json(err);
+    }
+  }
+);
+
 app.get("/api/bets/:id", async (req, res) => {
   try {
     let result = await findBet(req.params.id);
@@ -88,7 +104,7 @@ app.post("/api/auth/register", async (req, res) => {
     let result = await createUser({ name, mail, pass });
     res.status(201).send(result);
   } catch (err) {
-    res.status(418).json(err);
+    res.status(err?.status ?? 418).json(err);
   }
 });
 
