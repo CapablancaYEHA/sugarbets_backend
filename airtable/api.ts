@@ -160,3 +160,17 @@ export const sendBetAmount = async (amount: number, id: string) => {
     console.log("bet update err", e);
   }
 };
+
+export const updateUserTickets = async (id: string) => {
+  try {
+    let newVal: number;
+    const record = await dbClient("Users").find(id);
+    newVal = record._rawJson.fields.tickets + 1;
+    await dbClient("Users").update(id, {
+      tickets: newVal,
+    });
+    return "success";
+  } catch (e) {
+    throw { message: "Update тикета не удался", status: e.statusCode };
+  }
+};

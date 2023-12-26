@@ -13,6 +13,7 @@ import {
   getUserTickets,
   login,
   sendBetAmount,
+  updateUserTickets,
 } from "./airtable/api";
 import { corsObj, isDevMode, originIp } from "./const";
 import { pass_middleware } from "./pass_middleware";
@@ -24,45 +25,45 @@ const PORT = 4000;
 // @ts-ignore
 const http = httpInst.Server(app);
 app.use(cors(isDevMode() ? {} : corsObj));
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.use(passport.initialize());
 pass_middleware(passport);
 
-// const io = new Server(http, {
-//   cors: {
-//     origin: isDevMode() ? "*" : originIp,
-//   },
-// });
+const io = new Server(http, {
+  cors: {
+    origin: isDevMode() ? "*" : originIp,
+  },
+});
 
-// io.on("connection", (socket) => {
-//   console.log(`⚡: ${socket.id} user just connected!`);
+io.on("connection", (socket) => {
+  console.log(`⚡: ${socket.id} user just connected!`);
 
-//   socket.on("betRoomJoin", (data) => {
-//     console.log("used joined room", `bet-${data.betId}`);
-//     socket.join(`bet-${data.betId}`);
-//   });
+  //   socket.on("betRoomJoin", (data) => {
+  //     console.log("used joined room", `bet-${data.betId}`);
+  //     socket.join(`bet-${data.betId}`);
+  //   });
 
-//   socket.on("betSubmit", async (data) => {
-//     try {
-//       const newBetAmount = await sendBetAmount(data.betAmount, data.betId);
-//       io.in(`bet-${data.betId}`).emit("betUpdateResponse", {
-//         updatedValue: newBetAmount,
-//       });
-//     } catch (err) {
-//       console.log("err", err);
-//     }
-//   });
+  //   socket.on("betSubmit", async (data) => {
+  //     try {
+  //       const newBetAmount = await sendBetAmount(data.betAmount, data.betId);
+  //       io.in(`bet-${data.betId}`).emit("betUpdateResponse", {
+  //         updatedValue: newBetAmount,
+  //       });
+  //     } catch (err) {
+  //       console.log("err", err);
+  //     }
+  //   });
 
-//   socket.on("betLeave", (data) => {
-//     console.log("🔥: user left room", `bet-${data.betId}`);
-//   });
+  //   socket.on("betLeave", (data) => {
+  //     console.log("🔥: user left room", `bet-${data.betId}`);
+  //   });
 
-//   socket.on("disconnect", () => {
-//     console.log("☠️: A user disconnected");
-//   });
-// });
+  socket.on("disconnect", () => {
+    console.log("☠️: A user disconnected");
+  });
+});
 
 app.get(
   "/api/bets",
@@ -122,11 +123,26 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
-  console.log("req", req.body);
-  //   let { amount, test_notification, label, unaccepted } = req.body;
-  //   console.log("unaccepted", unaccepted);
-  //   console.log("user label", label);
-  //   console.log("amount", amount);
+  const proxyHost = req.headers["x-forwarded-host"];
+  const host = proxyHost ? proxyHost : req.headers.host || req.hostname;
+  if (host) {
+    res.status(200).send();
+  }
+  let { label, withdraw_amount } = req.body;
+  // FIXME С другой суммой в итоге надо сравнивать
+  if (withdraw_amount != 2.0) {
+    console.log("Подмена платежа?");
+    res.end();
+  } else {
+    try {
+      const res = await updateUserTickets(label!);
+      if (res === "success") {
+        io.emit("ticketsUpdateSucc");
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
 });
 
 http.listen(PORT, () => {
