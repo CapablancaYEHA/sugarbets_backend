@@ -25,6 +25,8 @@ const PORT = 4000;
 const http = httpInst.Server(app);
 app.use(cors(isDevMode() ? {} : corsObj));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(passport.initialize());
 pass_middleware(passport);
 
@@ -120,7 +122,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
-  console.log("req", req);
+  console.log("req", req.body);
   //   let { amount, test_notification, label, unaccepted } = req.body;
   //   console.log("unaccepted", unaccepted);
   //   console.log("user label", label);
