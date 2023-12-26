@@ -1,5 +1,5 @@
 import cors from "cors";
-import express from "express";
+import express, { Request } from "express";
 import * as httpInst from "http";
 import { Server } from "socket.io";
 import passport from "passport";
@@ -16,6 +16,7 @@ import {
 } from "./airtable/api";
 import { corsObj, isDevMode, originIp } from "./const";
 import { pass_middleware } from "./pass_middleware";
+import { IWebhookReq } from "airtable/interface";
 
 const app = express();
 const PORT = 4000;
@@ -116,6 +117,13 @@ app.post("/api/auth/login", async (req, res) => {
   } catch (err) {
     res.status(403).json(err);
   }
+});
+
+app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
+  let { amount, test_notification, label, unaccepted } = req.body;
+  console.log("unaccepted", unaccepted);
+  console.log("user label", label);
+  console.log("amount", amount);
 });
 
 http.listen(PORT, () => {
