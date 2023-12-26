@@ -120,7 +120,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
-  console.log("req", req.body);
+  console.log("req", req);
   //   let { amount, test_notification, label, unaccepted } = req.body;
   //   console.log("unaccepted", unaccepted);
   //   console.log("user label", label);
