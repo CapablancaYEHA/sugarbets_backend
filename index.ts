@@ -120,10 +120,11 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
-  let { amount, test_notification, label, unaccepted } = req.body;
-  console.log("unaccepted", unaccepted);
-  console.log("user label", label);
-  console.log("amount", amount);
+  console.log("req", req.body);
+  //   let { amount, test_notification, label, unaccepted } = req.body;
+  //   console.log("unaccepted", unaccepted);
+  //   console.log("user label", label);
+  //   console.log("amount", amount);
 });
 
 http.listen(PORT, () => {
