@@ -4,7 +4,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 const { sign, decode, verify } = jwt;
 
-import { IUserLoginRequest, IUserRegisterRequest } from "./interface";
+import {
+  IEventsResponse,
+  IUserLoginRequest,
+  IUserRegisterRequest,
+} from "./interface";
+import { parseJsonVal } from "./utils";
 
 const base_id = "appzEYCiuOo01xWiC";
 
@@ -42,6 +47,7 @@ export const createUser = async ({
           userName: name,
           userMail: mail,
           userPass: bcrypt.hashSync(pass, salt),
+          tickets: 0,
           role: "user",
         },
         (err, record) => {
@@ -101,32 +107,43 @@ export const login = async ({
   }
 };
 
-export const getUserTickets = async (id: string) => {
+export const getUserTickets = async (user: string) => {
   try {
-    const record = await dbClient("Users").find(id);
+    const record = await dbClient("Users").find(user);
     return record._rawJson.fields.tickets;
   } catch (e) {
     throw { message: "Запрос тикетов не удался", status: e.statusCode };
   }
 };
 
-export const getBetsList = () => {
+export const getTableAsArray = <T>(
+  tableName: string,
+  keysToCheck?: string[]
+): Promise<T> => {
   const final: any[] = [];
 
   return new Promise((res, rej) => {
-    dbClient("Bet")
+    dbClient(tableName)
       .select()
       .eachPage(
         (records, fetchNextPage) => {
           records.forEach((record) => {
-            const o = {
-              id: record._rawJson.id,
+            let o = {
               ...record._rawJson.fields,
             };
+            if (keysToCheck) {
+              let shit = keysToCheck.reduce((tot, am) => {
+                return {
+                  ...tot,
+                  [am]: parseJsonVal(tot[am]),
+                };
+              }, o);
+              o = shit;
+            }
             final.push(o);
           });
           fetchNextPage();
-          res(final);
+          res(final as T);
         },
         (err) => {
           if (err) {
@@ -137,27 +154,26 @@ export const getBetsList = () => {
   });
 };
 
-export const findBet = async (id: string) => {
+export const findEntity = async (
+  id: string,
+  table: string,
+  keysToCheck?: string[]
+): Promise<IEventsResponse> => {
   try {
-    const record = await dbClient("Bet").find(id);
-    return record._rawJson.fields;
+    const record = await dbClient(table).find(id);
+    let o = record._rawJson.fields;
+    if (keysToCheck) {
+      let shit = keysToCheck.reduce((tot, am) => {
+        return {
+          ...tot,
+          [am]: parseJsonVal(tot[am]),
+        };
+      }, o);
+      o = shit;
+    }
+    return o;
   } catch (e) {
-    console.log("bet search err", e);
-  }
-};
-
-export const sendBetAmount = async (amount: number, id: string) => {
-  try {
-    let newValue: number;
-    const record = await dbClient("Bet").find(id);
-    newValue = record._rawJson.fields.betTotal + amount;
-    await dbClient("Bet").update(id, {
-      betTotal: newValue,
-    });
-    console.log("Succ update!");
-    return newValue;
-  } catch (e) {
-    console.log("bet update err", e);
+    throw { message: "Не удалось найти id" };
   }
 };
 
@@ -172,5 +188,86 @@ export const updateUserTickets = async (id: string) => {
     return "success";
   } catch (e) {
     throw { message: "Update тикета не удался", status: e.statusCode };
+  }
+};
+
+const makeBetDraft = async ({ betBody, game, userId }): Promise<string> => {
+  return new Promise((res, rej) => {
+    dbClient("Bets").create(
+      {
+        authorId: userId,
+        game,
+        betBody,
+      },
+      (err, record) => {
+        if (err) {
+          console.error("Bet create err: ", JSON.stringify(err));
+          rej(err);
+          return;
+        }
+        res(record!.getId());
+      }
+    );
+  });
+};
+
+export const createBet = async ({
+  betBody,
+  game,
+  userId,
+  eventId,
+}): Promise<string> => {
+  let newBetId: string | undefined;
+  try {
+    newBetId = await makeBetDraft({ betBody, game, userId });
+    const record = await dbClient("Events").find(eventId);
+    const { betsArray: oldArr, isActive, prizePool } = record._rawJson.fields;
+    // FIXME Дополнительно мне надо получать текущее время и сравнивать со startDate?
+    if (isActive) {
+      let currPrize: number;
+      try {
+        currPrize = JSON.parse(prizePool)[game];
+      } catch (e) {
+        throw { message: "Ошибка парсинга prizePool" };
+      }
+      try {
+        await dbClient("Events").update(eventId, {
+          betsArray: [...oldArr, newBetId],
+          prizePool: JSON.stringify({ [game]: currPrize + 300 }),
+        });
+      } catch {
+        throw { message: "Update События провален" };
+      }
+    } else {
+      throw { message: "Ставка подана на неактивное событие" };
+    }
+
+    try {
+      const record = await dbClient("Users").find(userId);
+      const { tickets } = record._rawJson.fields;
+      if (tickets <= 0) {
+        throw { message: "0 билетов на счету" };
+      }
+      const t = tickets - 1;
+      await dbClient("Users").update(userId, {
+        betsArray: [...oldArr, newBetId],
+        tickets: t,
+      });
+      return newBetId;
+    } catch (e) {
+      throw e ?? { message: "Не обновился юзер (ставка и/или тикеты на счету" };
+    }
+  } catch (e) {
+    return new Promise((res, rej) => {
+      if (newBetId) {
+        dbClient("Bets").destroy([newBetId], (err, deletedRecords) => {
+          if (err) {
+            rej(err);
+          }
+          res(`Deleted betDraft because of EventUpdate Errors`);
+        });
+      }
+      rej(e);
+    });
   }
 };

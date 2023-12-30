@@ -23,3 +23,16 @@ export interface IWebhookReq {
   operation_label?: string | null;
   operation_id: string;
 }
+
+export interface IEventsResRaw {
+  betsArray: string[]; // айдишники ставок
+  eventTitle: string;
+  games: string; // JSON
+  innerId: string;
+  isActive: boolean;
+  startDate: string; // "2023-12-27T13:00:00.000Z"
+}
+
+export interface IEventsResponse extends Omit<IEventsResRaw, "games"> {
+  games: string[] | null;
+}
