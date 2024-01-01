@@ -20,15 +20,13 @@ const paramsArr = [
   "datetime",
   "sender",
   "codepro",
-  "notification_secret",
-  "label",
 ];
 
-export const compareSha = (inp: IWebhookReq, example: string) => {
+export const compareSha = (inp: IWebhookReq, label, example: string) => {
   const draft = paramsArr
     .map((p) => String(inp[p]))
-    .concat([process.env.YOO_SEC!])
-    .join("$");
+    .concat([process.env.YOO_SEC!, label])
+    .join("&");
 
   const hash = crypto.createHash("sha1");
   hash.update(draft);

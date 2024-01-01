@@ -36,9 +36,13 @@ export const makePay = async (req, res) => {
 // FIXME нужна какая-то таблица куда складывать поступившие платежи
 export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
   let { label, sha1_hash, amount, withdraw_amount } = req.body;
-  if (compareSha(req.body, sha1_hash)) {
+  if (compareSha(req.body, label, sha1_hash)) {
     try {
-      const payId = createPayment({ amount, withdraw_amount, userId: label });
+      const payId = await createPayment({
+        amount,
+        withdraw_amount,
+        userId: label!,
+      });
       await updateUserAfterPayment({ userId: label!, payId });
       res.status(200).send();
     } catch (e) {
@@ -46,6 +50,12 @@ export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
     }
   } else {
     console.log("Ошибка проверки sha");
+    await createPayment({
+      amount,
+      withdraw_amount,
+      userId: label!,
+      comment: "Платеж, видимо прошел, но в ДБ занести не можем",
+    });
     res.end();
   }
 };

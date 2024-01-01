@@ -36,3 +36,10 @@ export interface IEventsResRaw {
 export interface IEventsResponse extends Omit<IEventsResRaw, "games"> {
   games: string[] | null;
 }
+
+export interface ICreatePayReq {
+  amount: number;
+  withdraw_amount?: number | null;
+  userId: string;
+  comment?: string;
+}

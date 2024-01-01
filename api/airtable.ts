@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 const { sign, decode, verify } = jwt;
 
 import {
+  ICreatePayReq,
   IEventsResponse,
   IUserLoginRequest,
   IUserRegisterRequest,
@@ -289,12 +290,13 @@ export const createPayment = async ({
   amount,
   withdraw_amount,
   userId,
-}): Promise<string> => {
+  comment,
+}: ICreatePayReq): Promise<string> => {
   return new Promise((res, rej) => {
     dbClient("Payments").create(
       {
         authorId: userId,
-        amountInfo: [withdraw_amount, amount].join("_"),
+        paymentInfo: `${withdraw_amount}_${amount}_${comment ?? ""}`,
         dateCreated: new Date().toISOString(),
       },
       (err, record) => {
