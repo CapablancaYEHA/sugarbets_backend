@@ -37,13 +37,17 @@ io.on("connection", (socket) => {
     socket.join(`event-${data.eventId}`);
   });
 
+  socket.on("eventPageLeave", (data) => {
+    socket.leave(`event-${data.eventId}`);
+  });
+
   //   socket.on("betLeave", (data) => {
   //     console.log("🔥: user left room", `bet-${data.betId}`);
   //   });
 
-  socket.on("disconnect", () => {
-    console.log("☠️: A user disconnected");
-  });
+  //   socket.on("disconnect", () => {
+  //     console.log("☠️: A user disconnected");
+  //   });
 });
 
 app.post("/api/auth/register", register);
