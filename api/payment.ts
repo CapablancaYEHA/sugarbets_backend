@@ -32,15 +32,19 @@ export const makePay = async (req, res) => {
     .catch((err) => res.status(err?.status ?? 418).json(err));
 };
 
+// FIXME нужна какая-то таблица куда складывать поступившие платежи
 export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
   const proxyHost = req.headers["x-forwarded-host"];
-  const host = proxyHost ? proxyHost : req.headers.host || req.hostname;
-  if (host) {
-    res.status(200).send();
-  }
-  let { label, withdraw_amount } = req.body;
+  const host = proxyHost || req.hostname;
+  console.log("host", host);
+  //   if (host) {
+  //     res.status(200).send();
+  //   }
+  res.status(200).send();
+  let { label } = req.body;
   console.log("user", label);
-  // FIXME Нужно просто проверять хаш
+  //   FIXME Нужно просто проверять хаш
+
   //   if (withdraw_amount != 2.0) {
   //     console.log("Подмена платежа?");
   //     res.end();
