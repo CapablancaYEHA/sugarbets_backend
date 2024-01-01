@@ -7,4 +7,4 @@ export const parseJsonVal = (arg: string) => {
   }
 };
 
-export const betsResponseKeysCheck = ["games"];
+export const betsResponseKeysCheck = ["games", "prizePool"];

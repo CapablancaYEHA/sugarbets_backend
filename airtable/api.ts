@@ -10,6 +10,7 @@ import {
   IUserRegisterRequest,
 } from "./interface";
 import { parseJsonVal } from "./utils";
+import { io } from "../index";
 
 const base_id = "appzEYCiuOo01xWiC";
 
@@ -198,6 +199,8 @@ const makeBetDraft = async ({ betBody, game, userId }): Promise<string> => {
         authorId: userId,
         game,
         betBody,
+        forEventName: [],
+        dateCreated: new Date().toISOString(),
       },
       (err, record) => {
         if (err) {
@@ -221,10 +224,14 @@ export const createBet = async ({
   try {
     newBetId = await makeBetDraft({ betBody, game, userId });
     const record = await dbClient("Events").find(eventId);
-    const { betsArray: oldArr, isActive, prizePool } = record._rawJson.fields;
-    // FIXME Дополнительно мне надо получать текущее время и сравнивать со startDate?
+    const {
+      betsArray: betsInEvent,
+      isActive,
+      prizePool,
+    } = record._rawJson.fields;
+    let currPrize: number;
+    // FIXME Дополнительно мне надо получать текущее время и сравнивать со startDate? или достаточно ограничения на фронте
     if (isActive) {
-      let currPrize: number;
       try {
         currPrize = JSON.parse(prizePool)[game];
       } catch (e) {
@@ -232,7 +239,9 @@ export const createBet = async ({
       }
       try {
         await dbClient("Events").update(eventId, {
-          betsArray: [...oldArr, newBetId],
+          betsArray: isEmpty(betsInEvent)
+            ? [newBetId]
+            : [...betsInEvent, newBetId],
           prizePool: JSON.stringify({ [game]: currPrize + 300 }),
         });
       } catch {
@@ -244,18 +253,22 @@ export const createBet = async ({
 
     try {
       const record = await dbClient("Users").find(userId);
-      const { tickets } = record._rawJson.fields;
+      const { tickets, betsArray: betsInUser } = record._rawJson.fields;
       if (tickets <= 0) {
         throw { message: "0 билетов на счету" };
       }
       const t = tickets - 1;
       await dbClient("Users").update(userId, {
-        betsArray: [...oldArr, newBetId],
+        betsArray: isEmpty(betsInUser) ? [newBetId] : [...betsInUser, newBetId],
         tickets: t,
       });
+      io.in(`event-${eventId}`).emit("betUpdateResponse", {
+        updVal: currPrize + 300,
+        game,
+      });
       return newBetId;
-    } catch (e) {
-      throw e ?? { message: "Не обновился юзер (ставка и/или тикеты на счету" };
+    } catch {
+      throw { message: "Не обновился юзер (ставка и/или тикеты на счету" };
     }
   } catch (e) {
     return new Promise((res, rej) => {

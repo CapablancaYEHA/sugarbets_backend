@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(passport.initialize());
 pass_middleware(passport);
 
-const io = new Server(http, {
+export const io = new Server(http, {
   cors: {
     origin: isDevMode() ? "*" : originIp,
   },
@@ -42,10 +42,10 @@ const io = new Server(http, {
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
 
-  //   socket.on("betRoomJoin", (data) => {
-  //     console.log("used joined room", `bet-${data.betId}`);
-  //     socket.join(`bet-${data.betId}`);
-  //   });
+  socket.on("eventRoomJoin", (data) => {
+    console.log("used joined room", `event-${data.eventId}`);
+    socket.join(`event-${data.eventId}`);
+  });
 
   //   socket.on("betSubmit", async (data) => {
   //     try {
@@ -163,6 +163,10 @@ app.post("/api/bets", async (req, res) => {
   try {
     let result = await createBet({ betBody, game, userId, eventId });
     res.status(201).send(result);
+    // io.in(`bet-${eventId}`).emit("betUpdateResponse", {
+    // 	updVal: newBetAmount,
+    // 	game
+    //   });
   } catch (err) {
     res.status(err?.status ?? 418).json(err);
   }
@@ -200,6 +204,7 @@ app.post("/api/payment", async (req, res) => {
 app.post("/api/webhook", async (req: Request<{}, {}, IWebhookReq>, res) => {
   const proxyHost = req.headers["x-forwarded-host"];
   const host = proxyHost ? proxyHost : req.headers.host || req.hostname;
+  console.log("final host", host);
   //   FIXME Никогда не посылать ответ?
   //   if (host) {
   //     res.status(200).send();
