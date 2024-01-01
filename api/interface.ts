@@ -15,7 +15,7 @@ export interface IWebhookReq {
   datetime: string; // 2023-12-26T08:29:02Z
   sender: string; // может быть пустой строкой
   codepro: false;
-  label?: string | null; // transfered id, не должна быть пустая строка
+  label?: string | null; // кастомный лейбл, в моем случае юзер
   sha1_hash: string;
   test_notification: boolean;
   unaccepted?: boolean;

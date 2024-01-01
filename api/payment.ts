@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Request } from "express";
 import { IWebhookReq } from "./interface";
-import { updateUserTickets } from "./airtable";
+import { createPayment, updateUserAfterPayment } from "./airtable";
+import { compareSha } from "./utils";
 
 export const makePay = async (req, res) => {
   const { id, returnUri } = req.body;
@@ -34,25 +35,17 @@ export const makePay = async (req, res) => {
 
 // FIXME нужна какая-то таблица куда складывать поступившие платежи
 export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
-  const proxyHost = req.headers["x-forwarded-host"];
-  const host = proxyHost || req.hostname;
-  console.log("host", host);
-  //   if (host) {
-  //     res.status(200).send();
-  //   }
-  res.status(200).send();
-  let { label } = req.body;
-  console.log("user", label);
-  //   FIXME Нужно просто проверять хаш
-
-  //   if (withdraw_amount != 2.0) {
-  //     console.log("Подмена платежа?");
-  //     res.end();
-  //   } else {
-  //     try {
-  //       const res = await updateUserTickets(label!);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   }
+  let { label, sha1_hash, amount, withdraw_amount } = req.body;
+  if (compareSha(req.body, sha1_hash)) {
+    try {
+      const payId = createPayment({ amount, withdraw_amount, userId: label });
+      await updateUserAfterPayment({ userId: label!, payId });
+      res.status(200).send();
+    } catch (e) {
+      console.log("Ошибка при обработке доната: ", e);
+    }
+  } else {
+    console.log("Ошибка проверки sha");
+    res.end();
+  }
 };

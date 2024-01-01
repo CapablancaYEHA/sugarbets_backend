@@ -178,13 +178,13 @@ export const findEntity = async (
   }
 };
 
-export const updateUserTickets = async (id: string) => {
+export const updateUserAfterPayment = async ({ userId, payId }) => {
   try {
-    let newVal: number;
-    const record = await dbClient("Users").find(id);
-    newVal = record._rawJson.fields.tickets + 1;
-    await dbClient("Users").update(id, {
-      tickets: newVal,
+    const record = await dbClient("Users").find(userId);
+    const { tickets, paymentsArray: arr } = record._rawJson.fields;
+    await dbClient("Users").update(userId, {
+      tickets: tickets + 1,
+      paymentsArray: isEmpty(arr) ? [payId] : [...arr, payId],
     });
     return "success";
   } catch (e) {
@@ -283,4 +283,28 @@ export const createBet = async ({
       rej(e);
     });
   }
+};
+
+export const createPayment = async ({
+  amount,
+  withdraw_amount,
+  userId,
+}): Promise<string> => {
+  return new Promise((res, rej) => {
+    dbClient("Payments").create(
+      {
+        authorId: userId,
+        amountInfo: [withdraw_amount, amount].join("_"),
+        dateCreated: new Date().toISOString(),
+      },
+      (err, record) => {
+        if (err) {
+          console.error("Bet create err: ", JSON.stringify(err));
+          rej(err);
+          return;
+        }
+        res(record!.getId());
+      }
+    );
+  });
 };
