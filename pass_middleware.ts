@@ -1,4 +1,4 @@
-import { dbClient } from "./airtable/api";
+import { dbClient } from "./api/airtable";
 import { isEmpty } from "lodash-es";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
