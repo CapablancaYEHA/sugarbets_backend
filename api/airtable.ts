@@ -239,37 +239,38 @@ export const createBet = async ({
         throw { message: "Ошибка парсинга prizePool" };
       }
       try {
+        const record = await dbClient("Users").find(userId);
+        const { tickets, betsArray: betsInUser } = record._rawJson.fields;
+        if (tickets <= 0) {
+          throw { message: "0 билетов на балансе" };
+        }
+        const t = tickets - 1;
+        await dbClient("Users").update(userId, {
+          betsArray: isEmpty(betsInUser)
+            ? [newBetId]
+            : [...betsInUser, newBetId],
+          tickets: t,
+        });
+      } catch (e) {
+        throw e;
+      }
+      try {
         await dbClient("Events").update(eventId, {
           betsArray: isEmpty(betsInEvent)
             ? [newBetId]
             : [...betsInEvent, newBetId],
           prizePool: JSON.stringify({ [game]: currPrize + 300 }),
         });
+        io.in(`event-${eventId}`).emit("betUpdateResponse", {
+          updVal: currPrize + 300,
+          game,
+        });
+        return newBetId;
       } catch {
         throw { message: "Update События провален" };
       }
     } else {
       throw { message: "Ставка подана на неактивное событие" };
-    }
-
-    try {
-      const record = await dbClient("Users").find(userId);
-      const { tickets, betsArray: betsInUser } = record._rawJson.fields;
-      if (tickets <= 0) {
-        throw { message: "0 билетов на счету" };
-      }
-      const t = tickets - 1;
-      await dbClient("Users").update(userId, {
-        betsArray: isEmpty(betsInUser) ? [newBetId] : [...betsInUser, newBetId],
-        tickets: t,
-      });
-      io.in(`event-${eventId}`).emit("betUpdateResponse", {
-        updVal: currPrize + 300,
-        game,
-      });
-      return newBetId;
-    } catch {
-      throw { message: "Не обновился юзер (ставка и/или тикеты на счету" };
     }
   } catch (e) {
     return new Promise((res, rej) => {
