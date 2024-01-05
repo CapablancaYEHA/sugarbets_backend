@@ -33,7 +33,6 @@ export const makePay = async (req, res) => {
     .catch((err) => res.status(err?.status ?? 418).json(err));
 };
 
-// FIXME нужна какая-то таблица куда складывать поступившие платежи
 export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
   let { label, sha1_hash, amount, withdraw_amount } = req.body;
   if (compareSha(req.body, label, sha1_hash)) {

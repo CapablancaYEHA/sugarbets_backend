@@ -1,4 +1,6 @@
+import { Request } from "express";
 import { createBet, getTableAsArray, getUserTickets } from "./airtable";
+import { ICreateBetReq } from "./interface";
 
 export const getPlayers = async (req, res) => {
   try {
@@ -29,7 +31,7 @@ export const getBets = async (req, res) => {
   }
 };
 
-export const postBet = async (req, res) => {
+export const postBet = async (req: Request<{}, {}, ICreateBetReq>, res) => {
   const { betBody, game, userId, eventId } = req.body;
 
   try {

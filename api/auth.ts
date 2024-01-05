@@ -1,6 +1,9 @@
+import { Request } from "express";
+
+import { IUserLoginRequest, IUserRegisterRequest } from "./interface";
 import { createUser, login } from "./airtable";
 
-export const doLogin = async (req, res) => {
+export const doLogin = async (req: Request<{}, {}, IUserLoginRequest>, res) => {
   const { mail, pass } = req.body;
   try {
     let result = await login({ mail, pass });
@@ -10,7 +13,10 @@ export const doLogin = async (req, res) => {
   }
 };
 
-export const register = async (req, res) => {
+export const register = async (
+  req: Request<{}, {}, IUserRegisterRequest>,
+  res
+) => {
   const { name, mail, pass } = req.body;
   try {
     let result = await createUser({ name, mail, pass });

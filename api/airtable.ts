@@ -297,7 +297,9 @@ export const createPayment = async ({
     dbClient("Payments").create(
       {
         authorId: userId,
-        paymentInfo: `${withdraw_amount}_${amount}_${comment ?? ""}`,
+        paymentInfo: `${withdraw_amount}_${amount}${
+          comment ? `_com: ${comment}` : ""
+        }`,
         dateCreated: new Date().toISOString(),
       },
       (err, record) => {

@@ -41,10 +41,6 @@ io.on("connection", (socket) => {
     socket.leave(`event-${data.eventId}`);
   });
 
-  //   socket.on("betLeave", (data) => {
-  //     console.log("🔥: user left room", `bet-${data.betId}`);
-  //   });
-
   //   socket.on("disconnect", () => {
   //     console.log("☠️: A user disconnected");
   //   });

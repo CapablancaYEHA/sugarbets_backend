@@ -25,16 +25,24 @@ export interface IWebhookReq {
 }
 
 export interface IEventsResRaw {
-  betsArray: string[]; // айдишники ставок
+  betsArray?: string[]; // айдишники ставок
   eventTitle: string;
   games: string; // JSON
+  prizePool: string; // JSON
   innerId: string;
   isActive: boolean;
   startDate: string; // "2023-12-27T13:00:00.000Z"
+  org?: string;
+  info?: string;
 }
 
-export interface IEventsResponse extends Omit<IEventsResRaw, "games"> {
+type IPrizePool = {
+  [key: string]: number;
+};
+export interface IEventsResponse
+  extends Omit<IEventsResRaw, "games" | "prizePool"> {
   games: string[] | null;
+  prizePool: IPrizePool;
 }
 
 export interface ICreatePayReq {
@@ -42,4 +50,11 @@ export interface ICreatePayReq {
   withdraw_amount?: number | null;
   userId: string;
   comment?: string;
+}
+
+export interface ICreateBetReq {
+  betBody: string; //json string всего объекта из формы
+  game: string;
+  userId: string;
+  eventId: string;
 }
