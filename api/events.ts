@@ -1,12 +1,18 @@
-import { findEntity, getTableAsArray } from "./airtable";
-import { betsResponseKeysCheck } from "./utils";
-import { IEventsResponse } from "./interface";
+import { isEmpty } from "lodash-es";
+import { dbClient, findEntity, getTableAsArray } from "./airtable";
+import {
+  betResKeysCheck,
+  compareHashTables,
+  eventResKeysCheck,
+  parseJsonVal,
+} from "./utils";
+import { IBetResponse, IEventsResponse, IUserResp } from "./interface";
 
 export const getEvents = async (req, res) => {
   try {
     let result = await getTableAsArray<IEventsResponse[]>(
       "Events",
-      betsResponseKeysCheck
+      eventResKeysCheck
     );
     res.send(result);
   } catch (err) {
@@ -16,13 +22,69 @@ export const getEvents = async (req, res) => {
 
 export const getSingleEvent = async (req, res) => {
   try {
-    let result = await findEntity(
+    let result = await findEntity<IEventsResponse>(
       req.params.id,
       "Events",
-      betsResponseKeysCheck
+      eventResKeysCheck
     );
     res.send(result);
   } catch (err) {
     res.status(err?.status || 500).json(err);
+  }
+};
+
+export const closeEvent = async (req, res) => {
+  const { betBody, eventId, game } = req.body;
+
+  try {
+    const allBets = await getTableAsArray<IBetResponse[]>(
+      "Bets",
+      betResKeysCheck
+    );
+
+    const relevantBets = allBets.filter(
+      (a) => a.forEventId[0] === eventId && a.game === game
+    );
+
+    const master = parseJsonVal(betBody);
+
+    let winBets: IBetResponse[] = [];
+
+    relevantBets.forEach((r) => {
+      if (compareHashTables(master, r.betBody)) {
+        winBets.push(r);
+      }
+    });
+
+    const winners = winBets?.map((w) => w.authorId);
+    let result;
+    try {
+      let record = await findEntity<IEventsResponse>(
+        eventId,
+        "Events",
+        eventResKeysCheck
+      );
+      const { masterBetbody } = record;
+
+      await dbClient("Events").update(eventId, {
+        masterBetbody: JSON.stringify({ ...masterBetbody, [game]: master }),
+      });
+    } catch (e) {
+      throw e;
+    }
+    if (!isEmpty(winners)) {
+      const users = await getTableAsArray<IUserResp[]>("Users");
+
+      const relevantUsers = users
+        .filter((u) => winners.indexOf(u.innerId) !== -1)
+        .map((usr) => usr.userName);
+
+      result = `${game}__Победа для: ${relevantUsers.join(", ")}`;
+    } else {
+      result = `Нет угадавших ${game}`;
+    }
+    res.send(result);
+  } catch (e) {
+    res.status(e?.status || 500).json(e);
   }
 };

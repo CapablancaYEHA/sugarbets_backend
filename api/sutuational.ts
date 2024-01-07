@@ -1,24 +1,20 @@
 import { Request } from "express";
-import { createBet, getTableAsArray, getUserTickets } from "./airtable";
+import { createBet, getTableAsArray } from "./airtable";
 import { ICreateBetReq } from "./interface";
 
+// Если ответ предполагается не стринга\json (а число например), то его нельзя просто так отправить, нужно преобразовать в json
+const tableByGame = {
+  T8: "Tek",
+  SF6: "Street",
+};
+
 export const getPlayers = async (req, res) => {
+  const { game } = req.query;
   try {
-    let result = await getTableAsArray("Players");
+    let result = await getTableAsArray(`Players${tableByGame[game]}`);
     res.send(result);
   } catch (err) {
     res.json(err);
-  }
-};
-
-// Если ответ предполагается не стринга\json, то его нельзя просто так отправить, нужно преобразовать в json
-export const getTickets = async (req, res) => {
-  let { user } = req.query;
-  try {
-    let result = await getUserTickets(user as string);
-    res.json(result);
-  } catch (err) {
-    res.status(err?.status || 500).json(err);
   }
 };
 

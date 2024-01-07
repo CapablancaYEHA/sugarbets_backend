@@ -1,7 +1,7 @@
 import { Request } from "express";
 
 import { IUserLoginRequest, IUserRegisterRequest } from "./interface";
-import { createUser, login } from "./airtable";
+import { createUser, login, getUserProfile } from "./airtable";
 
 export const doLogin = async (req: Request<{}, {}, IUserLoginRequest>, res) => {
   const { mail, pass } = req.body;
@@ -23,5 +23,15 @@ export const register = async (
     res.status(201).send(result);
   } catch (err) {
     res.status(err?.status ?? 418).json(err);
+  }
+};
+
+export const getProfile = async (req, res) => {
+  let { user } = req.query;
+  try {
+    let result = await getUserProfile(user as string);
+    res.json(result);
+  } catch (err) {
+    res.status(err?.status || 500).json(err);
   }
 };

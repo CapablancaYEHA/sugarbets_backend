@@ -28,6 +28,3 @@ export const pass_middleware = (psp: any) => {
     })
   );
 };
-
-// opts.issuer = 'accounts.examplesoft.com';
-// opts.audience = 'yoursite.net';

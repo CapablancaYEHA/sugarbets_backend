@@ -5,12 +5,11 @@ import { Server } from "socket.io";
 import passport from "passport";
 
 import "dotenv/config.js";
-
 import { pass_middleware } from "./pass_middleware";
-import { getEvents, getSingleEvent } from "./api/events";
-import { doLogin, register } from "./api/auth";
+import { closeEvent, getEvents, getSingleEvent } from "./api/events";
+import { doLogin, register, getProfile } from "./api/auth";
 import { hookHandler, makePay } from "./api/payment";
-import { getBets, getPlayers, getTickets, postBet } from "./api/sutuational";
+import { getPlayers, postBet } from "./api/sutuational";
 import { corsObj, isDevMode, originIp } from "./const";
 
 const app = express();
@@ -39,11 +38,8 @@ io.on("connection", (socket) => {
 
   socket.on("eventPageLeave", (data) => {
     socket.leave(`event-${data.eventId}`);
+    // console.log("☠️: User left event room");
   });
-
-  //   socket.on("disconnect", () => {
-  //     console.log("☠️: A user disconnected");
-  //   });
 });
 
 app.post("/api/auth/register", register);
@@ -60,15 +56,22 @@ app.get(
   passport.authenticate("jwt", { session: false }),
   getSingleEvent
 );
+app.post(
+  "/api/events/close",
+  passport.authenticate("jwt", { session: false }),
+  closeEvent
+);
 
-app.post("/api/bets", postBet);
-
-app.get("/api/bets", passport.authenticate("jwt", { session: false }), getBets);
+app.post(
+  "/api/bets",
+  passport.authenticate("jwt", { session: false }),
+  postBet
+);
 
 app.get(
-  "/api/tickets",
+  "/api/profile",
   passport.authenticate("jwt", { session: false }),
-  getTickets
+  getProfile
 );
 
 app.get("/api/players", getPlayers);

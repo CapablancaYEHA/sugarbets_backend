@@ -7,6 +7,16 @@ export interface IUserRegisterRequest extends IUserLoginRequest {
   name: string;
 }
 
+export interface IUserResp {
+  userName: string;
+  userMail: string;
+  tickets: number;
+  innerId: string;
+  betsArray?: string[];
+  paymentsArray?: string[];
+  role: "user" | "admin";
+}
+
 export interface IWebhookReq {
   notification_type: "p2p-incoming" | "card-incoming";
   amount: number; // с плавающей точкой
@@ -29,6 +39,7 @@ export interface IEventsResRaw {
   eventTitle: string;
   games: string; // JSON
   prizePool: string; // JSON
+  masterBetbody?: string | null; // JSON
   innerId: string;
   isActive: boolean;
   startDate: string; // "2023-12-27T13:00:00.000Z"
@@ -39,10 +50,15 @@ export interface IEventsResRaw {
 type IPrizePool = {
   [key: string]: number;
 };
+export type IBetBod = {
+  [key: string]: string | string[];
+};
+
 export interface IEventsResponse
-  extends Omit<IEventsResRaw, "games" | "prizePool"> {
-  games: string[] | null;
+  extends Omit<IEventsResRaw, "games" | "prizePool" | "masterBetbody"> {
+  games: string[];
   prizePool: IPrizePool;
+  masterBetbody: IBetBod;
 }
 
 export interface ICreatePayReq {
@@ -57,4 +73,32 @@ export interface ICreateBetReq {
   game: string;
   userId: string;
   eventId: string;
+}
+
+export interface IEventsResRaw {
+  betsArray?: string[]; // айдишники ставок
+  eventTitle: string;
+  games: string; // JSON
+  prizePool: string; // JSON
+  innerId: string;
+  isActive: boolean;
+  startDate: string; // "2023-12-27T13:00:00.000Z"
+  org?: string;
+  info?: string;
+}
+
+export interface IBetResRaw {
+  innerId: string;
+  authorName: string[]; //один чел в массиве
+  authorId: string;
+  game: string;
+  forEventName: [string]; // one elem
+  forEventId: [string]; // one elem
+  isActive: boolean[]; // one elem
+  dateCreated: string; // "2023-12-27T13:00:00.000Z"
+  betBody: string;
+}
+
+export interface IBetResponse extends Omit<IBetResRaw, "betBody"> {
+  betBody: IBetBod;
 }

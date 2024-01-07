@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { IWebhookReq } from "./interface";
+import { IBetBod, IWebhookReq } from "./interface";
 
 export const parseJsonVal = (arg: string) => {
   try {
@@ -10,7 +10,8 @@ export const parseJsonVal = (arg: string) => {
   }
 };
 
-export const betsResponseKeysCheck = ["games", "prizePool"];
+export const eventResKeysCheck = ["games", "prizePool", "masterBetbody"];
+export const betResKeysCheck = ["betBody"];
 
 const paramsArr = [
   "notification_type",
@@ -31,4 +32,16 @@ export const compareSha = (inp: IWebhookReq, label, example: string) => {
   const hash = crypto.createHash("sha1");
   hash.update(draft);
   return hash.digest("hex") === example;
+};
+
+const sequence = ["1", "2", "3", "4", "56", "78"];
+
+export const compareHashTables = (master: IBetBod, example: IBetBod) => {
+  let shit = sequence.map((a) => {
+    if (a === "56" || a === "78") {
+      return JSON.stringify(example[a]) === JSON.stringify(master[a]);
+    }
+    return example[a] === master[a];
+  });
+  return shit.every((b) => b);
 };

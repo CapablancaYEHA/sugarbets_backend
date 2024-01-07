@@ -7,6 +7,7 @@ const { sign, decode, verify } = jwt;
 import {
   ICreatePayReq,
   IEventsResponse,
+  IUserResp,
   IUserLoginRequest,
   IUserRegisterRequest,
 } from "./interface";
@@ -109,12 +110,21 @@ export const login = async ({
   }
 };
 
-export const getUserTickets = async (user: string) => {
+// export const getUserTickets = async (user: string) => {
+//   try {
+//     const record = await dbClient("Users").find(user);
+//     return record._rawJson.fields.tickets;
+//   } catch (e) {
+//     throw { message: "Запрос тикетов не удался", status: e.statusCode };
+//   }
+// };
+
+export const getUserProfile = async (user: string): Promise<IUserResp> => {
   try {
     const record = await dbClient("Users").find(user);
-    return record._rawJson.fields.tickets;
+    return record._rawJson.fields;
   } catch (e) {
-    throw { message: "Запрос тикетов не удался", status: e.statusCode };
+    throw { message: "Ошибка запроса профиля", status: e.statusCode };
   }
 };
 
@@ -156,11 +166,11 @@ export const getTableAsArray = <T>(
   });
 };
 
-export const findEntity = async (
+export const findEntity = async <T>(
   id: string,
   table: string,
   keysToCheck?: string[]
-): Promise<IEventsResponse> => {
+): Promise<T> => {
   try {
     const record = await dbClient(table).find(id);
     let o = record._rawJson.fields;
@@ -175,7 +185,7 @@ export const findEntity = async (
     }
     return o;
   } catch (e) {
-    throw { message: "Не удалось найти id" };
+    throw { message: `Не удалось найти ${table}_id` };
   }
 };
 
@@ -233,8 +243,10 @@ export const createBet = async ({
     let currPrize: number;
     // FIXME Дополнительно мне надо получать текущее время и сравнивать со startDate? или достаточно ограничения на фронте
     if (isActive) {
+      let parsedPool;
       try {
-        currPrize = JSON.parse(prizePool)[game];
+        parsedPool = parseJsonVal(prizePool) ?? {};
+        currPrize = parsedPool[game] ?? 0;
       } catch (e) {
         throw { message: "Ошибка парсинга prizePool" };
       }
@@ -259,7 +271,10 @@ export const createBet = async ({
           betsArray: isEmpty(betsInEvent)
             ? [newBetId]
             : [...betsInEvent, newBetId],
-          prizePool: JSON.stringify({ [game]: currPrize + 300 }),
+          prizePool: JSON.stringify({
+            ...(parsedPool ?? {}),
+            [game]: currPrize + 300,
+          }),
         });
         io.in(`event-${eventId}`).emit("betUpdateResponse", {
           updVal: currPrize + 300,

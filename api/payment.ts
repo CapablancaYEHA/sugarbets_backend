@@ -33,6 +33,7 @@ export const makePay = async (req, res) => {
     .catch((err) => res.status(err?.status ?? 418).json(err));
 };
 
+// FIXME еще потестить проверку SHA?
 export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
   let { label, sha1_hash, amount, withdraw_amount } = req.body;
   if (compareSha(req.body, label, sha1_hash)) {
@@ -45,7 +46,7 @@ export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
       await updateUserAfterPayment({ userId: label!, payId });
       res.status(200).send();
     } catch (e) {
-      console.log("Ошибка при обработке доната: ", e);
+      console.log("Ошибка обработки доната: ", e);
     }
   } else {
     console.log("Ошибка проверки sha");
@@ -53,7 +54,7 @@ export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
       amount,
       withdraw_amount,
       userId: label!,
-      comment: "Платеж, видимо прошел, но в ДБ занести не можем",
+      comment: "Платеж, видимо, прошел, но в ДБ занести не можем",
     });
     res.end();
   }
