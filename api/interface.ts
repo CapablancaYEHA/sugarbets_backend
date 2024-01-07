@@ -45,6 +45,7 @@ export interface IEventsResRaw {
   startDate: string; // "2023-12-27T13:00:00.000Z"
   org?: string;
   info?: string;
+  locale: "RU" | "INT";
 }
 
 type IPrizePool = {
@@ -73,18 +74,6 @@ export interface ICreateBetReq {
   game: string;
   userId: string;
   eventId: string;
-}
-
-export interface IEventsResRaw {
-  betsArray?: string[]; // айдишники ставок
-  eventTitle: string;
-  games: string; // JSON
-  prizePool: string; // JSON
-  innerId: string;
-  isActive: boolean;
-  startDate: string; // "2023-12-27T13:00:00.000Z"
-  org?: string;
-  info?: string;
 }
 
 export interface IBetResRaw {

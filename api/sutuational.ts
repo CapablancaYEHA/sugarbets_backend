@@ -9,9 +9,11 @@ const tableByGame = {
 };
 
 export const getPlayers = async (req, res) => {
-  const { game } = req.query;
+  const { game, locale } = req.query;
   try {
-    let result = await getTableAsArray(`Players${tableByGame[game]}`);
+    let result = await getTableAsArray(
+      `Players${tableByGame[game]}${locale.toUpperCase()}`
+    );
     res.send(result);
   } catch (err) {
     res.json(err);
