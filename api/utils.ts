@@ -41,12 +41,38 @@ export const compareSha = (inp: IWebhookReq, label, example: string) => {
 
 const sequence = ["1", "2", "3", "4", "56", "78"];
 
-export const compareHashTables = (master: IBetBod, example: IBetBod) => {
-  let shit = sequence.map((a) => {
-    if (a === "56" || a === "78") {
-      return JSON.stringify(example[a]) === JSON.stringify(master[a]);
+// OLD
+// export const compareHashTables = (master: IBetBod, example: IBetBod) => {
+//   let shit = sequence.map((a) => {
+//     if (a === "56" || a === "78") {
+//       return JSON.stringify(example[a]) === JSON.stringify(master[a]);
+//     }
+//     return example[a] === master[a];
+//   });
+//   return shit.every((b) => b);
+// };
+
+export const compareHashTables = (example, master) => {
+  let result: boolean[] | boolean = [];
+  for (let i = 0; i <= sequence.length - 1; i++) {
+    if (sequence[i] === "56" || sequence[i] === "78") {
+      if (
+        JSON.stringify(example[sequence[i]]) ===
+        JSON.stringify(master[sequence[i]])
+      ) {
+        result.push(true);
+      } else {
+        result = false;
+        break;
+      }
+    } else {
+      if (example[sequence[i]] === master[sequence[i]]) {
+        result.push(true);
+      } else {
+        result = false;
+        break;
+      }
     }
-    return example[a] === master[a];
-  });
-  return shit.every((b) => b);
+  }
+  return Array.isArray(result) ? result.every((b) => b) : result;
 };
