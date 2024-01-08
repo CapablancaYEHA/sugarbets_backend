@@ -54,7 +54,7 @@ export const hookHandler = async (req: Request<{}, {}, IWebhookReq>, res) => {
       amount,
       withdraw_amount,
       userId: label!,
-      comment: "Платеж, видимо, прошел, но в ДБ занести не можем",
+      comment: "Платеж, прошел??? но в ДБ занести не можем, sha не совпал",
     });
     res.end();
   }

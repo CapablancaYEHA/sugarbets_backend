@@ -241,7 +241,6 @@ export const createBet = async ({
       prizePool,
     } = record._rawJson.fields;
     let currPrize: number;
-    // FIXME Дополнительно мне надо получать текущее время и сравнивать со startDate? или достаточно ограничения на фронте
     if (isActive) {
       let parsedPool;
       try {

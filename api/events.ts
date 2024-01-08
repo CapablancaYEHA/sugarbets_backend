@@ -58,31 +58,43 @@ export const closeEvent = async (req, res) => {
 
     const winners = winBets?.map((w) => w.authorId);
     let result;
-    try {
-      let record = await findEntity<IEventsResponse>(
-        eventId,
-        "Events",
-        eventResKeysCheck
-      );
-      const { masterBetbody } = record;
 
-      await dbClient("Events").update(eventId, {
-        masterBetbody: JSON.stringify({ ...masterBetbody, [game]: master }),
-      });
-    } catch (e) {
-      throw e;
-    }
+    const evRecord = await findEntity<IEventsResponse>(
+      eventId,
+      "Events",
+      eventResKeysCheck
+    );
+
+    const { masterBetbody, winners: tableWinners } = evRecord;
+
     if (!isEmpty(winners)) {
       const users = await getTableAsArray<IUserResp[]>("Users");
 
-      const relevantUsers = users
+      const winnerNames = users
         .filter((u) => winners.indexOf(u.innerId) !== -1)
         .map((usr) => usr.userName);
 
-      result = `${game}__Победа для: ${relevantUsers.join(", ")}`;
+      await dbClient("Events").update(eventId, {
+        masterBetbody: JSON.stringify({ ...masterBetbody, [game]: master }),
+        winners: JSON.stringify({
+          ...tableWinners,
+          [game]: winnerNames.join(", "),
+        }),
+      });
+
+      result = `${game}__Победа для: ${winnerNames.join(", ")}`;
     } else {
+      await dbClient("Events").update(eventId, {
+        masterBetbody: JSON.stringify({ ...masterBetbody, [game]: master }),
+        winners: JSON.stringify({
+          ...tableWinners,
+          [game]: "Нет угадавших",
+        }),
+      });
+
       result = `Нет угадавших ${game}`;
     }
+
     res.send(result);
   } catch (e) {
     res.status(e?.status || 500).json(e);

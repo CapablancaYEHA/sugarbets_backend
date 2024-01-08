@@ -40,9 +40,11 @@ export interface IEventsResRaw {
   games: string; // JSON
   prizePool: string; // JSON
   masterBetbody?: string | null; // JSON
+  winners?: string | null; // JSON
   innerId: string;
   isActive: boolean;
-  startDate: string; // "2023-12-27T13:00:00.000Z"
+  startDate: string; // когда начинаем принимать ставки
+  tourEnd: string; // дата проведения события + ориентир когда ставки уже не принимаются
   org?: string;
   info?: string;
   locale: "RU" | "INT";
@@ -56,10 +58,16 @@ export type IBetBod = {
 };
 
 export interface IEventsResponse
-  extends Omit<IEventsResRaw, "games" | "prizePool" | "masterBetbody"> {
+  extends Omit<
+    IEventsResRaw,
+    "games" | "prizePool" | "masterBetbody" | "winners"
+  > {
   games: string[];
   prizePool: IPrizePool;
-  masterBetbody: IBetBod;
+  masterBetbody: IBetBod | null;
+  winners: {
+    [key: string]: string;
+  } | null;
 }
 
 export interface ICreatePayReq {

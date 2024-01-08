@@ -10,7 +10,12 @@ export const parseJsonVal = (arg: string) => {
   }
 };
 
-export const eventResKeysCheck = ["games", "prizePool", "masterBetbody"];
+export const eventResKeysCheck = [
+  "games",
+  "prizePool",
+  "masterBetbody",
+  "winners",
+];
 export const betResKeysCheck = ["betBody"];
 
 const paramsArr = [
