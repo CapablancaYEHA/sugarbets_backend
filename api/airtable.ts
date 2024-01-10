@@ -136,9 +136,9 @@ export const getTableAsArray = <T>(
 
   return new Promise((res, rej) => {
     dbClient(tableName)
-      .select()
+      .select({ view: "default" })
       .eachPage(
-        (records, fetchNextPage) => {
+        async (records, fetchNextPage) => {
           records.forEach((record) => {
             let o = {
               ...record._rawJson.fields,
@@ -155,12 +155,12 @@ export const getTableAsArray = <T>(
             final.push(o);
           });
           fetchNextPage();
-          res(final as T);
         },
         (err) => {
           if (err) {
             rej(err);
           }
+          res(final as T);
         }
       );
   });
