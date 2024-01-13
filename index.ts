@@ -9,7 +9,8 @@ import { pass_middleware } from "./pass_middleware";
 import { closeEvent, getEvents, getSingleEvent } from "./api/events";
 import { doLogin, register, getProfile } from "./api/auth";
 import { hookHandler, makePay } from "./api/payment";
-import { getPlayers, postBet } from "./api/sutuational";
+import { getPlayers, pingTable, postBet } from "./api/sutuational";
+import { getBets, getSingleBet } from "./api/bets";
 import { corsObj, isDevMode, originIp } from "./const";
 
 const app = express();
@@ -67,6 +68,13 @@ app.post(
   passport.authenticate("jwt", { session: false }),
   postBet
 );
+app.get(
+  "/api/bets/:id",
+  passport.authenticate("jwt", { session: false }),
+  getSingleBet
+);
+// ставки пользователя
+app.get("/api/bets", passport.authenticate("jwt", { session: false }), getBets);
 
 app.get(
   "/api/profile",
@@ -78,4 +86,5 @@ app.get("/api/players", getPlayers);
 
 http.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
+  //   setInterval(pingTable, 1000 * 60 * 5);
 });

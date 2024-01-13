@@ -15,6 +15,7 @@ export interface IUserResp {
   betsArray?: string[];
   paymentsArray?: string[];
   role: "user" | "admin";
+  lastLogin: string;
 }
 
 export interface IWebhookReq {
@@ -64,7 +65,7 @@ export interface IEventsResponse
   > {
   games: string[];
   prizePool: IPrizePool;
-  masterBetbody: IBetBod | null;
+  masterBetbody: { [key: string]: IBetBod } | null;
   winners: {
     [key: string]: string;
   } | null;

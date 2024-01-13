@@ -1,5 +1,12 @@
 import crypto from "crypto";
-import { IBetBod, IWebhookReq } from "./interface";
+import { compareAsc } from "date-fns/compareAsc";
+import { parseISO } from "date-fns/parseISO";
+import { IWebhookReq } from "./interface";
+
+export const isWaitResults = (tourEnd: string) => {
+  const end = parseISO(tourEnd);
+  return compareAsc(new Date(), end) === 1;
+};
 
 export const parseJsonVal = (arg: string) => {
   try {

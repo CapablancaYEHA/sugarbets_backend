@@ -20,15 +20,6 @@ export const getPlayers = async (req, res) => {
   }
 };
 
-export const getBets = async (req, res) => {
-  try {
-    let result = await getTableAsArray("Bets");
-    res.send(result);
-  } catch (err) {
-    res.json(err);
-  }
-};
-
 export const postBet = async (req: Request<{}, {}, ICreateBetReq>, res) => {
   const { betBody, game, userId, eventId } = req.body;
 
@@ -39,3 +30,13 @@ export const postBet = async (req: Request<{}, {}, ICreateBetReq>, res) => {
     res.status(err?.status ?? 418).json(err);
   }
 };
+
+export const pingTable = () =>
+  new Promise(async (res, rej) => {
+    try {
+      await getTableAsArray("PlayersTekRU");
+      res("1");
+    } catch (e) {
+      res("fail");
+    }
+  });

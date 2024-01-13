@@ -6,12 +6,11 @@ const { sign, decode, verify } = jwt;
 
 import {
   ICreatePayReq,
-  IEventsResponse,
   IUserResp,
   IUserLoginRequest,
   IUserRegisterRequest,
 } from "./interface";
-import { parseJsonVal } from "./utils";
+import { isWaitResults, parseJsonVal } from "./utils";
 import { io } from "../index";
 
 const base_id = "appzEYCiuOo01xWiC";
@@ -96,6 +95,9 @@ export const login = async ({
           process.env.JWT!,
           { expiresIn: "2h" }
         );
+        await dbClient("Users").update(bdEntry["innerId"], {
+          lastLogin: new Date().toISOString(),
+        });
         return Promise.resolve({
           token,
           userId: byMail[0]._rawJson.id,
@@ -110,15 +112,6 @@ export const login = async ({
   }
 };
 
-// export const getUserTickets = async (user: string) => {
-//   try {
-//     const record = await dbClient("Users").find(user);
-//     return record._rawJson.fields.tickets;
-//   } catch (e) {
-//     throw { message: "Запрос тикетов не удался", status: e.statusCode };
-//   }
-// };
-
 export const getUserProfile = async (user: string): Promise<IUserResp> => {
   try {
     const record = await dbClient("Users").find(user);
@@ -130,13 +123,17 @@ export const getUserProfile = async (user: string): Promise<IUserResp> => {
 
 export const getTableAsArray = <T>(
   tableName: string,
-  keysToCheck?: string[]
+  keysToCheck?: string[],
+  filter?: string
 ): Promise<T> => {
   const final: any[] = [];
 
   return new Promise((res, rej) => {
     dbClient(tableName)
-      .select({ view: "default" })
+      .select({
+        view: "default",
+        ...(filter ? { filterByFormula: filter } : {}),
+      })
       .eachPage(
         async (records, fetchNextPage) => {
           records.forEach((record) => {
@@ -239,9 +236,10 @@ export const createBet = async ({
       betsArray: betsInEvent,
       isActive,
       prizePool,
+      tourEnd,
     } = record._rawJson.fields;
     let currPrize: number;
-    if (isActive) {
+    if (isActive && !isWaitResults(tourEnd)) {
       let parsedPool;
       try {
         parsedPool = parseJsonVal(prizePool) ?? {};
