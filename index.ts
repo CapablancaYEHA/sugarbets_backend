@@ -1,10 +1,10 @@
 import cors from "cors";
 import express from "express";
 import * as httpInst from "http";
-import * as httpsInst from "https";
 import { Server } from "socket.io";
 import passport from "passport";
-import * as fs from "fs";
+// import * as httpsInst from "https";
+// import * as fs from "fs";
 
 import "dotenv/config.js";
 import { pass_middleware } from "./pass_middleware";
@@ -20,13 +20,13 @@ const app = express();
 // @ts-ignore
 const http = httpInst.Server(app);
 // @ts-ignore
-const https = httpsInst.Server(
-  {
-    key: fs.readFileSync("../ssl/privatekey.pem"),
-    cert: fs.readFileSync("../ssl/certificate.pem"),
-  },
-  app
-);
+// const https = httpsInst.Server(
+//   {
+//     key: fs.readFileSync("../ssl/privatekey.pem"),
+//     cert: fs.readFileSync("../ssl/certificate.pem"),
+//   },
+//   app
+// );
 app.use(cors(isDevMode() ? {} : corsObj));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(passport.initialize());
 pass_middleware(passport);
 
-export const io = new Server(isDevMode() ? http : https, {
+export const io = new Server(http, {
   cors: {
     origin: isDevMode() ? "*" : originIp,
   },
@@ -93,11 +93,11 @@ app.get(
 
 app.get("/api/players", getPlayers);
 
-// http.listen(80, () => {
-//   console.log("Server listening on 80");
-//   //   setInterval(pingTable, 1000 * 60 * 5);
-// });
-
-https.listen(443, () => {
-  console.log("SSL listening on 443");
+http.listen(80, () => {
+  console.log("Server listening on 80");
+  //   setInterval(pingTable, 1000 * 60 * 5);
 });
+
+// https.listen(443, () => {
+//   console.log("SSL listening on 443");
+// });
