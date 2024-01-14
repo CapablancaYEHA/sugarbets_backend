@@ -16,6 +16,7 @@ export interface IUserResp {
   paymentsArray?: string[];
   role: "user" | "admin";
   lastLogin: string;
+  dateCreated: string;
 }
 
 export interface IWebhookReq {

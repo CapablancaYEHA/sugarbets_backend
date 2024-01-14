@@ -24,7 +24,7 @@ export const createUser = async ({
   mail,
   pass,
 }: IUserRegisterRequest): Promise<string> => {
-  const mailFormula = `{userMail}="${mail}"`;
+  const mailFormula = `LOWER({userMail})=LOWER("${mail}")`;
   const nameFormula = `{userName}="${name}"`;
 
   try {
@@ -51,10 +51,11 @@ export const createUser = async ({
           userPass: bcrypt.hashSync(pass, salt),
           tickets: 0,
           role: "user",
+          dateCreated: new Date().toISOString(),
         },
         (err, record) => {
           if (err) {
-            console.error(" createUser err", JSON.stringify(err));
+            console.error("createUser err", JSON.stringify(err));
             rej(err);
             return;
           }
@@ -71,7 +72,7 @@ export const login = async ({
   mail,
   pass,
 }: IUserLoginRequest): Promise<{ token: string; userId: string }> => {
-  const mailFormula = `{userMail}="${mail}"`;
+  const mailFormula = `LOWER({userMail})=LOWER("${mail}")`;
 
   try {
     const byMail = await dbClient("Users")

@@ -1,23 +1,32 @@
 import cors from "cors";
 import express from "express";
 import * as httpInst from "http";
+import * as httpsInst from "https";
 import { Server } from "socket.io";
 import passport from "passport";
+import * as fs from "fs";
 
 import "dotenv/config.js";
 import { pass_middleware } from "./pass_middleware";
 import { closeEvent, getEvents, getSingleEvent } from "./api/events";
 import { doLogin, register, getProfile } from "./api/auth";
 import { hookHandler, makePay } from "./api/payment";
-import { getPlayers, pingTable, postBet } from "./api/sutuational";
+import { getPlayers, postBet } from "./api/sutuational";
 import { getBets, getSingleBet } from "./api/bets";
 import { corsObj, isDevMode, originIp } from "./const";
 
 const app = express();
-const PORT = 4000;
 
 // @ts-ignore
 const http = httpInst.Server(app);
+// @ts-ignore
+const https = httpsInst.Server(
+  {
+    key: fs.readFileSync("../ssl/privatekey.pem"),
+    cert: fs.readFileSync("../ssl/certificate.pem"),
+  },
+  app
+);
 app.use(cors(isDevMode() ? {} : corsObj));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -25,7 +34,7 @@ app.use(express.json());
 app.use(passport.initialize());
 pass_middleware(passport);
 
-export const io = new Server(http, {
+export const io = new Server(isDevMode() ? http : https, {
   cors: {
     origin: isDevMode() ? "*" : originIp,
   },
@@ -84,7 +93,11 @@ app.get(
 
 app.get("/api/players", getPlayers);
 
-http.listen(PORT, () => {
-  console.log(`Server listening on ${PORT}`);
-  //   setInterval(pingTable, 1000 * 60 * 5);
+// http.listen(80, () => {
+//   console.log("Server listening on 80");
+//   //   setInterval(pingTable, 1000 * 60 * 5);
+// });
+
+https.listen(443, () => {
+  console.log("SSL listening on 443");
 });
