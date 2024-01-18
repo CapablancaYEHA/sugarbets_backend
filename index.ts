@@ -22,8 +22,8 @@ const http = httpInst.Server(app);
 // @ts-ignore
 const https = httpsInst.Server(
   {
-    key: fs.readFileSync("../ssl-self/privatekey.pem", "utf8"),
-    cert: fs.readFileSync("../ssl-self/certificate.pem", "utf8"),
+    key: fs.readFileSync("../ssl/privatekey.pem", "utf8"),
+    cert: fs.readFileSync("../ssl/certificate.pem", "utf8"),
   },
   app
 );
