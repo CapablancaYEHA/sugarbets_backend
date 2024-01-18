@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import * as httpInst from "http";
+// import * as httpInst from "http";
 import { Server } from "socket.io";
 import passport from "passport";
 import * as httpsInst from "https";
@@ -18,7 +18,7 @@ import { corsObj, isDevMode, originIp } from "./const";
 const app = express();
 
 // @ts-ignore
-const http = httpInst.Server(app);
+// const http = httpInst.Server(app);
 // @ts-ignore
 const https = httpsInst.Server(
   {
@@ -93,9 +93,9 @@ app.get(
 
 app.get("/api/players", getPlayers);
 
-http.listen(80, () => {
-  console.log("Server listening on 80");
-});
+// http.listen(80, () => {
+//   console.log("Server listening on 80");
+// });
 
 https.listen(443, () => {
   console.log("SSL listening on 443");
