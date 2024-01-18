@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-// import * as httpInst from "http";
+import * as httpInst from "http";
 import { Server } from "socket.io";
 import passport from "passport";
 import * as httpsInst from "https";
@@ -18,7 +18,7 @@ import { corsObj, isDevMode, originIp } from "./const";
 const app = express();
 
 // @ts-ignore
-// const http = httpInst.Server(app);
+const http = httpInst.Server(app);
 // @ts-ignore
 const https = httpsInst.Server(
   {
@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(passport.initialize());
 pass_middleware(passport);
 
-export const io = new Server(http, {
+export const io = new Server(isDevMode() ? http : https, {
   cors: {
     origin: isDevMode() ? "*" : originIp,
   },
