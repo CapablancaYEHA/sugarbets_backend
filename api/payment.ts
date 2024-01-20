@@ -13,12 +13,12 @@ export const makePay = async (req, res) => {
         receiver: "4100118483492189",
         label: id,
         "quickpay-form": "button",
-        sum: 2.0,
+        sum: 339.0,
         paymentType: "AC",
         successURL: returnUri,
       },
       {
-        timeout: 4000,
+        timeout: 5000,
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       }
     )
